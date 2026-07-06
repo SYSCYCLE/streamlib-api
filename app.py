@@ -19,20 +19,22 @@ with requests.Session() as session:
     while True:
         try:
             response = session.get(url, headers=headers)
+            etag_geldi_mi = "ETag" in response.headers
+            etag_degeri = response.headers.get("ETag", "YOK")
             
-            if "ETag" in response.headers:
+            if etag_geldi_mi:
                 headers["If-None-Match"] = response.headers["ETag"]
             
             if response.status_code == 200:
-                msg = f"Durum 200: Veri güncel. Yanıt: {response.json()}"
+                msg = f"✅ Durum 200: Veri geldi. \nETag Gönderildi mi? {etag_geldi_mi} \nETag Değeri: {etag_degeri}"
             elif response.status_code == 304:
-                msg = "Durum 304: ETag çalışıyor! Veri aynı."
+                msg = "⏳ Durum 304: ETag çalışıyor!"
             else:
-                msg = f"Beklenmedik durum kodu: {response.status_code}"
+                msg = f"⚠️ Durum: {response.status_code}"
             
             placeholder.text(msg)
                 
         except Exception as e:
-            placeholder.text(f"Bir hata oluştu: {e}")
+            placeholder.text(f"❌ Hata: {e}")
 
         time.sleep(5)
